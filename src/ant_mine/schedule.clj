@@ -10,4 +10,4 @@
    (schedule interval #(apply f args))))
 
 (defn cancel [job]
-  (.cancel job true))
+  (.cancel job false))
