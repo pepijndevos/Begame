@@ -1,7 +1,6 @@
 (ns ant-mine.core
   (:import [javax.swing JFrame JPanel WindowConstants]
-           [java.awt Graphics2D Color]
-           [java.util.concurrent TimeUnit ScheduledThreadPoolExecutor])
+           [java.awt Graphics2D Color])
   (:require [clojure.java.io :as io]
             [clojure.set :as s]))
 
@@ -12,8 +11,6 @@
 
 (def state (agent {}))
 
-(def runner (ScheduledThreadPoolExecutor. (.availableProcessors (Runtime/getRuntime))))
-
 (defrecord game-object [x y height width sprite])
 
 (def dimension (juxt (memfn getHeight) (memfn getWidth)))
@@ -22,12 +19,6 @@
   (let [sprite (javax.imageio.ImageIO/read (io/input-stream file))
         [height width] (dimension sprite)]
     (game-object. x y height width sprite)))
-
-(defn schedule
-  ([interval f]
-   (.scheduleWithFixedDelay runner f 0 interval TimeUnit/MILLISECONDS))
-  ([interval f & args]
-   (schedule interval #(apply f args))))
 
 (defn game [w h panel]
   (doto (new JFrame)
