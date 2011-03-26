@@ -1,8 +1,9 @@
 (ns ant-mine.quadtree
   (:refer-clojure :exclude [contains?]))
 
-(defn contains? [{x1 :x y1 :y height1 :height width1 :width}
-                 {x2 :x y2 :y height2 :height width2 :width :or {width2 0 height2 0}}]
+(defn contains?
+  [{x1 :x y1 :y height1 :height width1 :width}
+   {x2 :x y2 :y height2 :height width2 :width :or {width2 0 height2 0}}]
   (and (<= x1 x2)
        (<= y1 y2)
        (>= (+ x1 width1) (+ x2 width2))
@@ -44,19 +45,18 @@
       (area (+ x (:x field)) (+ y (:y field)) width height))))
 
 (defn insert [field obj & [pidx parent]]
+  (println "field obj" field obj)
+  (println "pidx parent" pidx parent)
   (cond
-    (nil? (:content field)) obj
+    (nil? field) obj
     (vector? (:content field))
       (let [quads (map #(sub-area % field) (range 4))
             idx (first
                   (keep-indexed
                     #(when (has-centre? %2 obj) %1)
                     quads))]
-        (update-in field
-                   [:content idx]
-                   insert obj
-                   idx
-                   field))
+        (update-in field [:content idx]
+                   insert obj idx field))
     :else (-> (sub-area pidx parent)
             (insert field)
             (insert obj))))

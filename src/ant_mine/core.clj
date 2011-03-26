@@ -17,6 +17,12 @@
 
 (defn object [x y file]
   (let [sprite (javax.imageio.ImageIO/read (io/input-stream file))
+        sprite (proxy [java.awt.image.BufferedImage]
+                     [(.getWidth sprite) (.getHeight sprite) (.getType sprite)]
+                     (toString [] "image"))
+        _      (-> sprite 
+                 (.getRaster)
+                 (.setRect (.getData sprite)))
         [height width] (dimension sprite)]
     (game-object. x y height width sprite)))
 
