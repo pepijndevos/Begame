@@ -44,12 +44,23 @@
                       3 [width height])]
       (area (+ x (:x field)) (+ y (:y field)) width height))))
 
+(defn paint-quad [obj g pane]
+  (.setColor g (java.awt.Color. (rand-int 0xffffff)))
+  (if (instance? quad obj)
+    (do
+      (.fillRect g (:x obj) (:y obj) (:width obj) (:height obj))
+      (doseq [child (:content obj)
+              :when (not (nil? child))]
+        (paint-quad child g pane)))
+    (.drawImage g (:sprite obj) (:x obj) (:y obj) pane)))
+
 (defn insert [field obj & [pidx parent]]
-  (println "field obj" field obj)
-  (println "pidx parent" pidx parent)
   (cond
     (nil? field) obj
-    (vector? (:content field))
+    (or (<= (:width field) 1)
+        (<= (:height field) 1))
+      (throw (Exception. "another object exists here"))
+    (instance? quad field)
       (let [quads (map #(sub-area % field) (range 4))
             idx (first
                   (keep-indexed
@@ -60,5 +71,14 @@
     :else (-> (sub-area pidx parent)
             (insert field)
             (insert obj))))
-              
 
+(defn collides? [field obj]
+  (cond
+    (nil? field) false
+    (instance? quad field)
+      (reduce #(or %1 (collides? %2 obj))
+        false
+        (filter
+          (partial overlaps? obj)
+          (keep identity (:content field))))
+    :else (when (overlaps? field obj) field)))
