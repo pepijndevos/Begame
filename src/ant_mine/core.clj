@@ -53,7 +53,6 @@
 
 (def pane (canvas paint-component))
 (def manager (javax.swing.RepaintManager/currentManager pane))
-(game width height pane)
 
 (add-watch state :state-change
   (fn [_ _ old new]
