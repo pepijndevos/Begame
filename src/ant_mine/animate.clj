@@ -1,13 +1,14 @@
 (ns ant-mine.animate
-  (:refer-clojure :exclude [future])
+  (:refer-clojure :exclude [future future-call])
   (:use [ant-mine
-         [schedule :only [future]]
+         util
+         [schedule]
          [core :only [state]]]))
 
 (def animations (java.util.concurrent.LinkedBlockingQueue.))
 
 (defn now [] (System/currentTimeMillis))
-                  now 1000 300  0
+
 (defn transition [start ms from to]
   (let [step (/ (- to from) ms)
         mi (min from to)
@@ -21,10 +22,10 @@
           (min ma)
           (max mi))))))
 
-(defn animation [k ms trs]
+(defn animation [obj ms trs]
   (let [now (now)
-        trs (for [[k tr] trs] [k (apply transition now ms tr)])]
-  (.put animations [k trs (+ now ms)])))
+        trs (for [[k to] trs] [k (transition now ms (k obj) to)])]
+  (.put animations [obj trs (+ now ms)])))
 
 (defn syquel [q]
   (let [[_ _ end :as i] (.take q)]
@@ -33,18 +34,19 @@
     i))
 
 (defn process []
-  (let [[k anns] (syquel animations)
-        anns (map (juxt first (comp int deref peek)) anns)
-        assoc* (fn [m k kvs]
-                 (assoc m k
-                        (apply assoc
-                               (get m k)
-                               (apply concat kvs))))]
-    (send state assoc* k anns)))
+  (let [[obj anns end] (.take animations)
+        nobj (into obj
+                   (map (juxt first
+                              (comp int deref peek))
+                        anns))]
+    (when (< (now) end)
+      (.put animations [nobj anns end])
+      (send state rejoin obj nobj))))
 
 (defn run []
   (println "running")
-  (future
-    (process)
-    (Thread/yield)
-    (recur)))
+  (let [fut (future
+              (process)
+              (Thread/yield)
+              (recur))]
+    #(cancel fut)))

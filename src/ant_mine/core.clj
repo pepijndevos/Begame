@@ -1,4 +1,7 @@
 (ns ant-mine.core
+  (:use [ant-mine
+         [schedule :only [schedule]]
+         util])
   (:import [javax.swing JFrame JPanel WindowConstants]
            [java.awt Graphics2D Color])
   (:require [clojure.java.io :as io]
@@ -9,20 +12,10 @@
 (def width 500)
 (def height 500)
 
-(def state (agent {}))
+; Sorted for collisions detection
+(def state (agent (sorted-set-by #(compare (:x %1) (:x %2)))))
 
 (defrecord game-object [x y height width sprite])
-
-(def dimension (juxt (memfn getHeight) (memfn getWidth)))
-
-(defn printable-image [sprite]
-  (let [sprite (proxy [java.awt.image.BufferedImage]
-                 [(.getWidth sprite) (.getHeight sprite) (.getType sprite)]
-                 (toString [] "image"))]
-    (-> sprite
-      (.getRaster)
-      (.setRect (.getData sprite)))
-    sprite))
 
 (defn object [x y file]
   (let [sprite (javax.imageio.ImageIO/read (io/input-stream file))
@@ -47,18 +40,17 @@
   (doto g
     (.setColor (Color. (rand-int 0xffffff)))
     (.fillRect 0 0 width height))
-  (doseq [obj @state
-          :let [v (val obj)]]
-    (.drawImage g (:sprite v) (:x v) (:y v) pane)))
+  (doseq [obj @state]
+    (.drawImage g (:sprite obj) (:x obj) (:y obj) pane)))
 
 (def pane (canvas paint-component))
 (def manager (javax.swing.RepaintManager/currentManager pane))
 
 (add-watch state :state-change
   (fn [_ _ old new]
-    (doseq [pair (s/difference (set new) (set old))
-            obj  [(val pair) (get old (key pair))]
-            :when (not (nil? obj))]
+    (doseq [obj (s/difference
+                  (s/union old new)
+                  (s/intersection old new))]
       (.addDirtyRegion
         manager
         pane
