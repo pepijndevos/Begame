@@ -13,7 +13,7 @@
 (def height 500)
 
 ; Sorted for collisions detection
-(def state (agent (sorted-set-by #(compare (:x %1) (:x %2)))))
+(def state (agent (sorted-set-by #(compare [(:x %1) (:y %1)] [(:x %2) (:y %2)]))))
 
 (defrecord game-object [x y height width sprite])
 
