@@ -5,7 +5,8 @@
          [schedule]
          [core :only [state]]]))
 
-(def animations (java.util.concurrent.LinkedBlockingQueue.))
+(def animations (ref (list)))
+(def kill-ring (ref #{}))
 
 (defn now [] (System/currentTimeMillis))
 
@@ -25,28 +26,36 @@
 (defn animation [obj ms trs]
   (let [now (now)
         trs (for [[k to] trs] [k (transition now ms (k obj) to)])]
-  (.put animations [obj trs (+ now ms)])))
+  (dosync (alter animations conj [obj trs (+ now ms)]))))
 
-(defn syquel [q]
-  (let [[_ _ end :as i] (.take q)]
-    (when (< (now) end)
-      (.put q i))
-    i))
+(defn stop [id]
+  (dosync
+    (alter kill-ring conj id)))
 
-(defn process []
-  (let [[obj anns end] (.take animations)
-        nobj (into obj
+(defn alive? [id]
+  (if (contains? @kill-ring id)
+    (do
+      (alter kill-ring disj id)
+      false)
+    true))
+
+(defn current? [[{id :id} _ end]]
+  (and (< (now) end)
+       (alive? id)))
+
+(defn process [[obj anns end]]
+  (let [nobj (into obj
                    (map (juxt first
                               (comp int deref peek))
                         anns))]
-    (when (< (now) end)
-      (.put animations [nobj anns end])
-      (send state rejoin obj nobj))))
+    (alter state rejoin obj nobj)
+    [nobj anns end]))
 
-(defn run []
-  (println "running")
-  (let [fut (future
-              (process)
-              (Thread/yield)
-              (recur))]
-    #(cancel fut)))
+(defn sweep [anims]
+  (when (seq @anims)
+    (dosync
+      (alter anims (partial filter current?))
+      (alter anims (comp doall (partial map process))))))
+
+(defn run [timeout]
+  (schedule timeout sweep animations))

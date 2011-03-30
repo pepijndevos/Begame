@@ -1,27 +1,15 @@
 (ns begame.core
   (:use [begame
-         [schedule :only [schedule]]
-         util])
+         [schedule :only [schedule]]])
   (:import [javax.swing JFrame JPanel WindowConstants]
            [java.awt Graphics2D Color])
-  (:require [clojure.java.io :as io]
-            [clojure.set :as s]))
-
-;(def counter (java.util.concurrent.atomic.AtomicInteger. 0))
+  (:require [clojure.set :as s]))
 
 (def width 500)
 (def height 500)
 
 ; Sorted for collisions detection
-(def state (agent (sorted-set-by #(compare [(:x %1) (:y %1)] [(:x %2) (:y %2)]))))
-
-(defrecord game-object [x y height width sprite])
-
-(defn object [x y file]
-  (let [sprite (javax.imageio.ImageIO/read (io/input-stream file))
-        ;sprite (printable-image sprite) ; debug
-        [height width] (dimension sprite)]
-    (game-object. x y height width sprite)))
+(def state (ref (sorted-set-by #(compare [(:x %1) (:y %1) (:id %1)] [(:x %2) (:y %2) (:id %2)]))))
 
 (defn game [w h panel]
   (doto (new JFrame)
@@ -36,7 +24,6 @@
     (paintComponent [g] (f g this))))
 
 (defn paint-component [g pane]
-  ;(println (.incrementAndGet counter))
   (doto g
     (.setColor (Color. (rand-int 0xffffff)))
     (.fillRect 0 0 width height))

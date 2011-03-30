@@ -11,8 +11,8 @@
       (.setRect (.getData sprite)))
     sprite))
 
-(defn supdate [s o f & args]
-  (conj (disj s o) (apply f o args)))
-
 (defn rejoin [s o n]
   (conj (disj s o) n))
+
+(defn supdate [s o f & args]
+  (rejoin s o (apply f o args)))
