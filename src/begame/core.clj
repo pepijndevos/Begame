@@ -1,5 +1,5 @@
-(ns ant-mine.core
-  (:use [ant-mine
+(ns begame.core
+  (:use [begame
          [schedule :only [schedule]]
          util])
   (:import [javax.swing JFrame JPanel WindowConstants]

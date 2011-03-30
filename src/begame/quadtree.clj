@@ -1,4 +1,4 @@
-(ns ant-mine.quadtree
+(ns begame.quadtree
   (:refer-clojure :exclude [contains?]))
 
 (defn contains?

@@ -1,4 +1,4 @@
-(ns ant-mine.util)
+(ns begame.util)
 
 (def dimension (juxt (memfn getHeight) (memfn getWidth)))
 

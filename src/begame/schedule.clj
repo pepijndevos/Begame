@@ -1,4 +1,4 @@
-(ns ant-mine.schedule
+(ns begame.schedule
   (:refer-clojure :exclude [future future-call])
   (:import [java.util.concurrent TimeUnit ScheduledThreadPoolExecutor]))
 

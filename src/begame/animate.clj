@@ -1,6 +1,6 @@
-(ns ant-mine.animate
+(ns begame.animate
   (:refer-clojure :exclude [future future-call])
-  (:use [ant-mine
+  (:use [begame
          util
          [schedule]
          [core :only [state]]]))

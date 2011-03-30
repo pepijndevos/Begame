@@ -1,5 +1,5 @@
-(ns ant-mine.collision
-  (:use [ant-mine
+(ns begame.collision
+  (:use [begame
          object
          util
          [core :only [state]]])

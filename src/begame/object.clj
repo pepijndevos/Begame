@@ -1,4 +1,4 @@
-(ns ant-mine.object)
+(ns begame.object)
 
 (defprotocol
   actor
