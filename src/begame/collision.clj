@@ -2,6 +2,7 @@
   (:use [begame
          object
          util
+         [schedule :only [schedule]]
          [core :only [state]]])
   (:refer-clojure :exclude [contains?]))
 
@@ -24,3 +25,12 @@
         candidate (take-while #(> (+ (:x f) (:width f)) (:x %)) r)
         :when (overlaps? f candidate)]
     [f candidate]))
+
+(defn notify [colls]
+  (doseq [[l r] colls]
+    (do
+      (react l :collision r)
+      (react r :collision l))))
+
+(defn run [timeout]
+  (schedule timeout (comp notify collisions)))

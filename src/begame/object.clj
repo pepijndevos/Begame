@@ -2,10 +2,14 @@
   (:use begame.util)
   (:require [clojure.java.io :as io]))
 
-(defprotocol
-  actor
-  (act [this world])
-  (react [this world event]))
+(defmulti act type)
+
+(defmethod act :default [_])
+
+(defmulti react (fn [obj evtype event]
+                  [(type obj) evtype]))
+
+(defmethod react :default [_ _ _])
 
 (defrecord game-object [id x y height width sprite])
 

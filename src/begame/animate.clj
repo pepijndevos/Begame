@@ -1,8 +1,8 @@
 (ns begame.animate
-  (:refer-clojure :exclude [future future-call])
   (:use [begame
          util
-         [schedule]
+         object
+         [schedule :only [schedule]]
          [core :only [state]]]))
 
 (def animations (ref (list)))
@@ -28,20 +28,22 @@
         trs (for [[k to] trs] [k (transition now ms (k obj) to)])]
   (dosync (alter animations conj [obj trs (+ now ms)]))))
 
-(defn stop [id]
+(defn cancel [id]
   (dosync
     (alter kill-ring conj id)))
 
 (defn alive? [id]
-  (if (contains? @kill-ring id)
-    (do
-      (alter kill-ring disj id)
-      false)
-    true))
+  (not 
+    (and (contains? @kill-ring id)
+         (alter kill-ring disj id))))
 
-(defn current? [[{id :id} _ end]]
-  (and (< (now) end)
-       (alive? id)))
+(defn current? [[obj _ end]]
+  (if (and (< (now) end)
+           (alive? (:id obj)))
+    true
+    (do
+      (react obj :end end)
+      false)))
 
 (defn process [[obj anns end]]
   (let [nobj (into obj
