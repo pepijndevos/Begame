@@ -59,9 +59,10 @@
           (let [prev-map (into {} frame)
                 ad @additions]
             (alter additions empty)
-            (concat
-              (map #(act % prev-map) frame)
-              ad)))))))
+            (keep identity
+                  (concat
+                    (map #(act % prev-map) frame)
+                    ad))))))))
 
 (defn game [w h board]
   (let [can (canvas w h)]
