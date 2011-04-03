@@ -1,18 +1,19 @@
 (ns begame.collision
+  (:import java.awt.Rectangle)
+  (:require [clojure.set :as s])
   (:refer-clojure :exclude [contains?]))
 
-(defn contains?
-  [{y1 :y height :height} y2]
-  (<= y1 y2 (+ y1 height)))
+(defn rectangle [obj]
+  (Rectangle. (:x obj) (:y obj) (:width obj) (:height obj)))
 
-(defn overlaps? [{y1 :y height1 :height :as bb1}
-                 {y2 :y height2 :height :as bb2}]
-  (let [by1 (+ y1 height1)
-        by2 (+ y2 height2)]
-    (or (contains? bb1 y2)
-        (contains? bb1 by2)
-        (contains? bb2 y1)
-        (contains? bb2 by1))))
+(defn centre [{:keys [x y width height]}]
+  [(+ x (/ width 2)) (+ y (/ height 2))])
+
+(defn contains? [obj1 obj2]
+  (.conatins (rectangle obj1) (rectangle obj2)))
+  
+(defn intersects? [obj1 obj2]
+  (.intersects (rectangle obj1) (rectangle obj2)))
 
 (defn collisions [state]
   (for [rights (take-while
@@ -22,5 +23,10 @@
                    (sort-by :x state)))
         :let [[f & r] rights]
         candidate (take-while #(> (+ (:x f) (:width f)) (:x %)) r)
-        :when (overlaps? f candidate)]
+        :when (intersects? f candidate)]
     [f candidate]))
+
+(defn collision-map [state]
+  (let [col (collisions state)]
+    (into (s/map-invert col) col)))
+

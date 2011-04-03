@@ -17,7 +17,7 @@
 (defn canvas [w h]
   (let [can (Canvas.)]
     (doto (new JFrame)
-      (.setDefaultCloseOperation WindowConstants/DISPOSE_ON_CLOSE)
+      (.setDefaultCloseOperation WindowConstants/EXIT_ON_CLOSE)
       ;(.setUndecorated true)
       (.setIgnoreRepaint true)
       (.add can)
@@ -28,6 +28,7 @@
       (.createBufferStrategy 2))))
 
 (defn draw [g frame pane]
+  (Thread/sleep 10) ;kill
   (doto g
     (.setColor Color/BLACK)
     (.fillRect 0 0 (.getWidth pane) (.getHeight pane)))
@@ -56,12 +57,11 @@
     (lazy-seq
       (slow-loop
         (dosync
-          (let [prev-map (into {} frame)
-                ad @additions]
+          (let [ad @additions]
             (alter additions empty)
             (keep identity
                   (concat
-                    (map #(act % prev-map) frame)
+                    (map #(act % frame) frame)
                     ad))))))))
 
 (defn game [w h board]

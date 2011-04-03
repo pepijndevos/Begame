@@ -8,9 +8,9 @@
   java.awt.event.KeyListener
   (keyTyped [_ _])
   (keyPressed [_ evt]
-    (dosync (alter pressed conj (.getKeyChar evt))))
+    (dosync (alter pressed conj (.getKeyCode evt))))
   (keyReleased [_ evt]
-    (dosync (alter pressed disj (.getKeyChar evt))))
+    (dosync (alter pressed disj (.getKeyCode evt))))
   java.awt.event.MouseListener
   (mouseClicked [_ _])
   (mouseEntered [_ _])
