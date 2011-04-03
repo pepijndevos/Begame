@@ -2,9 +2,9 @@
   (:use begame.util)
   (:require [clojure.java.io :as io]))
 
-(defmulti act #(type (first %&)))
+(defmulti act (fn [obj world] (type obj)))
 
-(defmethod act :default [obj world])
+(defmethod act :default [obj _] obj)
 
 (defrecord game-object [id x y height width sprite]
   clojure.lang.IMapEntry
@@ -23,3 +23,6 @@
       (object id x y height width sprite)))
   ([id x y height width sprite]
    (game-object. id x y height width sprite)))
+
+(defn extended-object [obj typ mp]
+  (with-meta (into obj mp) {:type typ}))

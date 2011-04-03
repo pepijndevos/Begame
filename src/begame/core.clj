@@ -2,6 +2,7 @@
   (:use [begame
          object
          animate
+         event
          util])
   (:import [javax.swing JFrame WindowConstants]
            [java.awt Canvas Graphics2D Color])
@@ -35,7 +36,7 @@
       (.drawImage g (:sprite obj) (real (:x obj)) (real (:y obj)) pane)
       (catch Exception e (println obj)))))
 
-(defn fast-loop [can slow]
+(defn fast-loop [slow can]
   (let [strategy (.getBufferStrategy can)]
     (loop [slow slow]
       (do-while (.contentsLost strategy)
@@ -61,3 +62,11 @@
             (concat
               (map #(act % prev-map) frame)
               ad)))))))
+
+(defn game [w h board]
+  (let [can (canvas w h)]
+    (watch can)
+    (-> (slow-loop board)
+      (animate)
+      (fast-loop can))))
+
