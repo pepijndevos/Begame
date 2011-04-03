@@ -1,9 +1,4 @@
 (ns begame.collision
-  (:use [begame
-         object
-         util
-         [schedule :only [schedule]]
-         [core :only [state]]])
   (:refer-clojure :exclude [contains?]))
 
 (defn contains?
@@ -19,18 +14,13 @@
         (contains? bb2 y1)
         (contains? bb2 by1))))
 
-(defn collisions []
-  (for [rights (take-while (complement nil?) (iterate next (seq @state)))
+(defn collisions [state]
+  (for [rights (take-while
+                 (complement nil?)
+                 (iterate
+                   next
+                   (sort-by :x state)))
         :let [[f & r] rights]
         candidate (take-while #(> (+ (:x f) (:width f)) (:x %)) r)
         :when (overlaps? f candidate)]
     [f candidate]))
-
-(defn notify [colls]
-  (doseq [[l r] colls]
-    (do
-      (react l :collision r)
-      (react r :collision l))))
-
-(defn run [timeout]
-  (schedule timeout (comp notify collisions)))

@@ -16,3 +16,14 @@
 
 (defn supdate [s o f & args]
   (rejoin s o (apply f o args)))
+
+(defmacro do-while [test & body]
+  `(loop []
+     ~@body
+     (when ~test
+       (recur))))
+
+(defn real [d]
+  (if (instance? clojure.lang.IDeref d)
+    @d
+    d))

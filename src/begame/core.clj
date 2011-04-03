@@ -1,44 +1,63 @@
 (ns begame.core
   (:use [begame
-         [schedule :only [schedule]]])
-  (:import [javax.swing JFrame JPanel WindowConstants]
-           [java.awt Graphics2D Color])
-  (:require [clojure.set :as s]))
+         object
+         animate
+         util])
+  (:import [javax.swing JFrame WindowConstants]
+           [java.awt Canvas Graphics2D Color])
+  (:require [clojure.set :as s]
+            begame.collision))
 
 ; Sorted for collisions detection
-(def state (ref (sorted-set-by #(compare [(:x %1) (:y %1) (:id %1)] [(:x %2) (:y %2) (:id %2)]))))
+(def additions (ref []))
 
-(defn game [w h panel]
-  (doto (new JFrame)
-    (.setDefaultCloseOperation WindowConstants/DISPOSE_ON_CLOSE)
-    ;(.setUndecorated true)
-    (.setContentPane panel)
-    (.setSize w h)
-    (.setVisible true)))
+(def ^:dynamic *frame-duration* 100)
 
-(defn canvas [f]
-  (proxy [JPanel] []
-    (paintComponent [g] (f g this))))
+(defn canvas [w h]
+  (let [can (Canvas.)]
+    (doto (new JFrame)
+      (.setDefaultCloseOperation WindowConstants/DISPOSE_ON_CLOSE)
+      ;(.setUndecorated true)
+      (.setIgnoreRepaint true)
+      (.add can)
+      (.setSize w h)
+      (.setVisible true))
+    (doto can
+      (.setIgnoreRepaint true)
+      (.createBufferStrategy 2))))
 
-(defn paint-component [g pane]
+(defn draw [g frame pane]
   (doto g
-    (.setColor (Color. (rand-int 0xffffff)))
+    (.setColor Color/BLACK)
     (.fillRect 0 0 (.getWidth pane) (.getHeight pane)))
-  (doseq [obj @state]
-    (.drawImage g (:sprite obj) (:x obj) (:y obj) pane)))
+  (doseq [obj frame]
+    (try
+      (.drawImage g (:sprite obj) (real (:x obj)) (real (:y obj)) pane)
+      (catch Exception e (println obj)))))
 
-(def pane (canvas paint-component))
-(def manager (javax.swing.RepaintManager/currentManager pane))
+(defn fast-loop [can slow]
+  (let [strategy (.getBufferStrategy can)]
+    (loop [slow slow]
+      (do-while (.contentsLost strategy)
+        (do-while (.contentsRestored strategy)
+          (let [g (.getDrawGraphics strategy)]
+            (draw g (first slow) can)
+            (.dispose g)))
+        (.show strategy))
+      (if (< (now)
+             (+ *frame-duration*
+                (:timestamp (meta (first slow)))))
+        (recur slow)
+        (recur (rest slow))))))
 
-(add-watch state :state-change
-  (fn [_ _ old new]
-    (doseq [obj (s/difference
-                  (s/union old new)
-                  (s/intersection old new))]
-      (.addDirtyRegion
-        manager
-        pane
-        (:x obj)
-        (:y obj)
-        (:width obj)
-        (:height obj)))))
+(defn slow-loop [frame]
+  (cons frame
+    (lazy-seq
+      (slow-loop
+        (dosync
+          (let [prev-map (into {} frame)
+                ad @additions]
+            (alter additions empty)
+            (concat
+              (map #(act % prev-map) frame)
+              ad)))))))
