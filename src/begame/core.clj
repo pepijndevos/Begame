@@ -34,7 +34,7 @@
       (.drawImage g (:sprite obj) (:x obj) (:y obj) (:width obj) (:height obj) pane)
       (catch Exception e (println obj)))))
 
-(defn draw-loop [logic can]
+(defn draw-loop [can logic]
   (let [strategy (.getBufferStrategy can)]
     (loop [frame logic]
       (do-while (.contentsLost strategy)
@@ -60,7 +60,8 @@
 (defn game [w h board]
   (let [can (canvas w h)]
     (watch can)
-    (-> (logic-loop board)
+    (->> (logic-loop board)
+      ;(seque 10)
       ;(trickle)
       (animate)
       (draw-loop can))))

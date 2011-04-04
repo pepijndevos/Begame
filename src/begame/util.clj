@@ -27,3 +27,7 @@
   (if (instance? clojure.lang.IDeref d)
     @d
     d))
+
+(defmacro memoizing [fns & body]
+  (let [mems (mapcat (fn [f] `(~f (memoize ~f))) fns)]
+    `(binding [~@mems] ~@body)))
