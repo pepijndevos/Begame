@@ -12,8 +12,6 @@
 ; Sorted for collisions detection
 (def additions (ref []))
 
-(def ^:dynamic *frame-duration* 100)
-
 (defn canvas [w h]
   (let [can (Canvas.)]
     (doto (new JFrame)
@@ -28,34 +26,29 @@
       (.createBufferStrategy 2))))
 
 (defn draw [g frame pane]
-  (Thread/sleep 10) ;kill
   (doto g
     (.setColor Color/BLACK)
     (.fillRect 0 0 (.getWidth pane) (.getHeight pane)))
   (doseq [obj frame]
     (try
-      (.drawImage g (:sprite obj) (real (:x obj)) (real (:y obj)) pane)
+      (.drawImage g (:sprite obj) (:x obj) (:y obj) (:width obj) (:height obj) pane)
       (catch Exception e (println obj)))))
 
-(defn fast-loop [slow can]
+(defn draw-loop [logic can]
   (let [strategy (.getBufferStrategy can)]
-    (loop [slow slow]
+    (loop [frame logic]
       (do-while (.contentsLost strategy)
         (do-while (.contentsRestored strategy)
           (let [g (.getDrawGraphics strategy)]
-            (draw g (first slow) can)
+            (draw g (first frame) can)
             (.dispose g)))
         (.show strategy))
-      (if (< (now)
-             (+ *frame-duration*
-                (:timestamp (meta (first slow)))))
-        (recur slow)
-        (recur (rest slow))))))
+      (recur (rest frame)))))
 
-(defn slow-loop [frame]
+(defn logic-loop [frame]
   (cons frame
     (lazy-seq
-      (slow-loop
+      (logic-loop
         (dosync
           (let [ad @additions]
             (alter additions empty)
@@ -67,7 +60,8 @@
 (defn game [w h board]
   (let [can (canvas w h)]
     (watch can)
-    (-> (slow-loop board)
+    (-> (logic-loop board)
+      ;(trickle)
       (animate)
-      (fast-loop can))))
+      (draw-loop can))))
 
