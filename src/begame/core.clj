@@ -30,7 +30,7 @@
                    (sort-by priority))]
     (paint obj g can)))
 
-(defn draw-loop [can logic]
+(defn draw-loop [^Canvas can logic]
   (let [strategy (.getBufferStrategy can)]
     (loop [frame logic]
       (do-while (.contentsLost strategy)

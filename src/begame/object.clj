@@ -4,7 +4,7 @@
   (act [this id world]))
 
 (defprotocol visible
-  (paint [this graphic canvas])
+  (paint [this ^java.awt.Graphics graphic canvas])
   (priority [this]))
 
 (defprotocol solid

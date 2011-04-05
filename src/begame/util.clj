@@ -3,9 +3,7 @@
   (:require [clojure.java.io :as io]
             [clojure.set :as s]))
 
-(def dimension (juxt (memfn getHeight) (memfn getWidth)))
-
-(defn printable-image [sprite]
+(defn printable-image [^java.awt.image.BufferedImage sprite]
   (let [sprite (proxy [java.awt.image.BufferedImage]
                  [(.getWidth sprite) (.getHeight sprite) (.getType sprite)]
                  (toString [] "image"))]
@@ -14,7 +12,7 @@
       (.setRect (.getData sprite)))
     sprite))
 
-(defrecord duck [x y width height sprite]
+(defrecord duck [x y width height ^java.awt.Image sprite]
   actor
   (act [this _ _]
     (update-in
@@ -23,7 +21,7 @@
       [:x] (partial + (- (rand-int 10) 5))))
   visible
   (paint [this g can]
-    (.drawImage g sprite x y width height can))
+    (.drawImage ^java.awt.Graphics g sprite x y width height can))
   solid
   (rectangle [_]
     (java.awt.Rectangle. x y width height)))

@@ -9,7 +9,7 @@
 (defrecord ball [x y xdelt ydelt]
   actor
   (act [ball _ field]
-    (let [cen (centre (rectangle ball))
+    (let [cen ^java.awt.Point (centre (rectangle ball))
           cx (.getX cen)
           cy (.getY cen)
           ball (cond
@@ -21,7 +21,7 @@
           :x (+ (:x ball) (:xdelt ball))
           :y (+ (:y ball) (:ydelt ball)))))
   visible
-  (paint [ball g can] (.drawImage g (:ball images) x y can))
+  (paint [ball g can] (.drawImage ^java.awt.Graphics g (:ball images) x y can))
   (priority [_] 2)
   solid
   (rectangle [ball] (java.awt.Rectangle. x y 40 40)))
@@ -34,7 +34,7 @@
       (clojure.core/contains? @pressed 40) (update-in bat [:y] + 15)
       :else bat))
   visible
-  (paint [ball g can] (.drawImage g (:bat images) 760 y can))
+  (paint [ball g can] (.drawImage ^java.awt.Graphics g (:bat images) 760 y can))
   (priority [_] 1)
   solid
   (rectangle [ball] (java.awt.Rectangle. 760 y 40 120)))
@@ -45,7 +45,7 @@
     (let [ball (:ball field)]
       (assoc bot :y (- (:y ball) 40))))
   visible
-  (paint [ball g can] (.drawImage g (:bot images) 0 y can))
+  (paint [ball g can] (.drawImage ^java.awt.Graphics g (:bot images) 0 y can))
   (priority [_] 1)
   solid
   (rectangle [ball] (java.awt.Rectangle. 0 y 40 120)))
@@ -53,8 +53,8 @@
 (def field (reify
              visible
              (paint [_ g _]
-                    (.setColor g java.awt.Color/BLACK)
-                    (.fillRect g 0 0 800 500))
+                    (.setColor ^java.awt.Graphics g java.awt.Color/BLACK)
+                    (.fillRect ^java.awt.Graphics g 0 0 800 500))
              (priority [_] 0)))
 
 (dosync

@@ -24,7 +24,7 @@
       (alter mouse assoc :x (.getX evt) :y (.getY evt))
       (alter pressed disj (.getButton evt)))))
 
-(defn watch [canvas]
+(defn watch [^java.awt.Canvas canvas]
   (let [w (watcher.)]
     (doto canvas
       (.addKeyListener w)
