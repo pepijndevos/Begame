@@ -1,7 +1,12 @@
 (ns begame.event)
 
-(def pressed (ref #{}))
-(def mouse (ref {:x nil :y nil}))
+(def pressed
+  "Contains all currently presse keys"
+  (ref #{}))
+
+(def mouse
+  "Contains the state of the mouse"
+  (ref {:x nil, :y nil, :buttons #{}}))
 
 (deftype
   watcher []
@@ -17,14 +22,21 @@
   (mouseExited [_ _])
   (mousePressed [_ evt]
     (dosync
-      (alter mouse assoc :x (.getX evt) :y (.getY evt))
-      (alter pressed conj (.getButton evt))))
+      (alter mouse assoc
+             :x (.getX evt)
+             :y (.getY evt)
+             :buttons (conj (get @mouse :buttons) (.getButton evt)))))
   (mouseReleased [_ evt]
     (dosync
-      (alter mouse assoc :x (.getX evt) :y (.getY evt))
-      (alter pressed disj (.getButton evt)))))
+      (alter mouse assoc
+             :x (.getX evt)
+             :y (.getY evt)
+             :buttons (disj (get @mouse :buttons) (.getButton evt))))))
 
-(defn watch [^java.awt.Canvas canvas]
+(defn watch
+  "Watch given canvas for keyboard and mouse events.
+  Mouse movement is not tracked."
+  [^java.awt.Canvas canvas]
   (let [w (watcher.)]
     (doto canvas
       (.addKeyListener w)

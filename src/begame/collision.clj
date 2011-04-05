@@ -4,14 +4,21 @@
   (:require [clojure.set :as s])
   (:refer-clojure :exclude [contains?]))
 
-(defn centre [^java.awt.Rectangle rect]
+(defn centre
+  "Returns a Point representing
+  the centre of a Rectangle"
+  [^java.awt.Rectangle rect]
   (java.awt.Point.
     (+ (.getX rect)
        (/ (.getWidth rect) 2))
     (+ (.getY rect)
        (/ (.getHeight rect) 2))))
 
-(defn collisions [frame]
+(defn collisions
+  "Returns a seq of sets.
+  Every set contains two keys of objects
+  that have intersecting Rectangles."
+  [frame]
   (for [rights (->> (filter (comp (partial instance? begame.object.solid) val) frame)
                     (map (juxt key (comp rectangle val)))
                     (sort-by #(.getX ^java.awt.Rectangle (peek %)))
@@ -23,9 +30,5 @@
                                                (.getX ^java.awt.Rectangle (peek %)))
                                            r)
         :when (.intersects rect crect)]
-    [k ckey]))
-
-(defn collision-map [state]
-  (let [col (collisions state)]
-    (into (s/map-invert col) col)))
+    #{k ckey}))
 

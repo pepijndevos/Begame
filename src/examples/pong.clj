@@ -22,7 +22,7 @@
           :y (+ (:y ball) (:ydelt ball)))))
   visible
   (paint [ball g can] (.drawImage ^java.awt.Graphics g (:ball images) x y can))
-  (priority [_] 2)
+  (layer [_] 2)
   solid
   (rectangle [ball] (java.awt.Rectangle. x y 40 40)))
 
@@ -35,7 +35,7 @@
       :else bat))
   visible
   (paint [ball g can] (.drawImage ^java.awt.Graphics g (:bat images) 760 y can))
-  (priority [_] 1)
+  (layer [_] 1)
   solid
   (rectangle [ball] (java.awt.Rectangle. 760 y 40 120)))
 
@@ -46,7 +46,7 @@
       (assoc bot :y (- (:y ball) 40))))
   visible
   (paint [ball g can] (.drawImage ^java.awt.Graphics g (:bot images) 0 y can))
-  (priority [_] 1)
+  (layer [_] 1)
   solid
   (rectangle [ball] (java.awt.Rectangle. 0 y 40 120)))
 
@@ -55,7 +55,7 @@
              (paint [_ g _]
                     (.setColor ^java.awt.Graphics g java.awt.Color/BLACK)
                     (.fillRect ^java.awt.Graphics g 0 0 800 500))
-             (priority [_] 0)))
+             (layer [_] 0)))
 
 (dosync
   (alter state assoc
