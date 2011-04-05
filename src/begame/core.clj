@@ -57,7 +57,7 @@
     (watch can)
     (->> (logic-loop)
       ;(seque 10)
-      (trickle)
-      ;(animate)
+      ;(trickle)
+      (animate)
       (draw-loop can))))
 

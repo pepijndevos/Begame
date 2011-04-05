@@ -1,6 +1,7 @@
 (ns begame.util
   (:use begame.object)
-  (:require [clojure.java.io :as io]))
+  (:require [clojure.java.io :as io]
+            [clojure.set :as s]))
 
 (def dimension (juxt (memfn getHeight) (memfn getWidth)))
 
@@ -39,3 +40,8 @@
 
 (defn sprite [file]
   (javax.imageio.ImageIO/read (io/input-stream file)))
+
+(defn align [m1 m2]
+  (map
+    (juxt identity m1 m2)
+    (s/intersection (set (keys m1)) (set (keys m2)))))

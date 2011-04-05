@@ -1,4 +1,5 @@
-(ns begame.animate)
+(ns begame.animate
+  (:use begame.util))
 
 (def ^:dynamic *frame-duration* 100)
 
@@ -18,19 +19,16 @@
       (int))))
 
 (defn trickle [slow]
-  (map #(do
-          (Thread/sleep *frame-duration*)
-          (with-meta % {:timestamp (now)})) slow))
+  (map #(do (Thread/sleep *frame-duration*) %) slow))
 
 (defn animate* [[from to] start]
-  (map
-    (fn mrg [o n]
-      (merge-with
-        #(if (and (number? %1) (not= %1 %2))
-           (transition start *frame-duration* %1 %2)
-           %2)
-        o n))
-    from to))
+  (into {}
+    (for [[id o n] (align from to)]
+      [id (merge-with
+            #(if (and (number? %1) (not= %1 %2))
+               (transition start *frame-duration* %1 %2)
+               %2)
+            o n)])))
 
 (defn animate [frames]
   (let [start (now)]
