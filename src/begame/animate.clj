@@ -1,5 +1,5 @@
 (ns begame.animate
-  (:use begame.util))
+  (:use [begame util object]))
 
 (def ^:dynamic *frame-duration* 100)
 
@@ -24,11 +24,13 @@
 (defn animate* [[from to] start]
   (into {}
     (for [[id o n] (align from to)]
-      [id (merge-with
-            #(if (and (number? %1) (not= %1 %2))
-               (transition start *frame-duration* %1 %2)
-               %2)
-            o n)])))
+      (if (extends? actor (class n))
+        [id (merge-with
+              #(if (and (number? %1) (not= %1 %2))
+                 (transition start *frame-duration* %1 %2)
+                 %2)
+              o n)]
+        [id n]))))
 
 (defn animate [frames]
   (let [start (now)]

@@ -25,8 +25,9 @@
       (.createBufferStrategy 2))))
 
 (defn draw [frame g can]
-  (doseq [[_ obj] frame
-          :when (instance? begame.object.visible obj)]
+  (doseq [obj (->> (vals frame)
+                   (filter #(extends? visible (class %)))
+                   (sort-by priority))]
     (paint obj g can)))
 
 (defn draw-loop [can logic]
@@ -44,7 +45,7 @@
   (into {}
     (for [[id obj] frame
           :when (not (nil? obj))]
-      (if (instance? begame.object.actor obj)
+      (if (extends? actor (class obj))
         [id (act obj id frame)]
         [id obj]))))
 
