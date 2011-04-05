@@ -1,19 +1,28 @@
 (ns begame.collision
+  (:use begame.object)
   (:import java.awt.Rectangle)
   (:require [clojure.set :as s])
   (:refer-clojure :exclude [contains?]))
 
-(defn rectangle [obj]
-  (Rectangle. (:x obj) (:y obj) (:width obj) (:height obj)))
-
-(defn centre [{:keys [x y width height]}]
-  [(+ x (/ width 2)) (+ y (/ height 2))])
+(defn centre [rect]
+  (java.awt.Point.
+    (+ (.getX rect)
+       (/ (.getWidth rect) 2))
+    (+ (.getY rect)
+       (/ (.getHeight rec) 2))))
 
 (defn contains? [obj1 obj2]
   (.conatins (rectangle obj1) (rectangle obj2)))
   
 (defn intersects? [obj1 obj2]
   (.intersects (rectangle obj1) (rectangle obj2)))
+
+(defn collisions [frame]
+  (for [rights (->> (filter (comp (partial instance? begame.object.solid) val) frame)
+                    (map (juxt key rectangle))
+                    (sort-by #(.getX %))
+                    (iterate next)
+                    (take-while (complement nil?)))]))
 
 (defn collisions [state]
   (for [rights (take-while

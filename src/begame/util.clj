@@ -1,4 +1,5 @@
 (ns begame.util
+  (:use begame.object)
   (:require [clojure.java.io :as io]))
 
 (def dimension (juxt (memfn getHeight) (memfn getWidth)))
@@ -11,6 +12,20 @@
       (.getRaster)
       (.setRect (.getData sprite)))
     sprite))
+
+(defrecord duck [x y width height sprite]
+  actor
+  (act [this _ _]
+    (update-in
+      (update-in this
+                 [:y] (partial + (- (rand-int 10) 5)))
+      [:x] (partial + (- (rand-int 10) 5))))
+  visible
+  (paint [this g can]
+    (.drawImage g sprite x y width height can))
+  solid
+  (rectangle [_]
+    (java.awt.Rectangle. x y width height)))
 
 (defmacro do-while [test & body]
   `(loop []

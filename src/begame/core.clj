@@ -43,20 +43,19 @@
 (defn iteration [frame]
   (into {}
     (for [[id obj] frame
-          :let [obj (if (instance? begame.object.actor obj)
-                      (act obj id frame)
-                      obj)]
           :when (not (nil? obj))]
-      [id obj])))
+      (if (instance? begame.object.actor obj)
+        [id (act obj id frame)]
+        [id obj]))))
 
 (defn logic-loop []
   (cons (dosync (alter state iteration))
         (lazy-seq (logic-loop))))
 
-(defn game [w h board]
+(defn game [w h]
   (let [can (canvas w h)]
     (watch can)
-    (->> (logic-loop board)
+    (->> (logic-loop)
       ;(seque 10)
       (trickle)
       ;(animate)
