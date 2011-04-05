@@ -1,4 +1,5 @@
-(ns begame.util)
+(ns begame.util
+  (:require [clojure.java.io :as io]))
 
 (def dimension (juxt (memfn getHeight) (memfn getWidth)))
 
@@ -11,23 +12,15 @@
       (.setRect (.getData sprite)))
     sprite))
 
-(defn rejoin [s o n]
-  (conj (disj s o) n))
-
-(defn supdate [s o f & args]
-  (rejoin s o (apply f o args)))
-
 (defmacro do-while [test & body]
   `(loop []
      ~@body
      (when ~test
        (recur))))
 
-(defn real [d]
-  (if (instance? clojure.lang.IDeref d)
-    @d
-    d))
-
 (defmacro memoizing [fns & body]
   (let [mems (mapcat (fn [f] `(~f (memoize ~f))) fns)]
     `(binding [~@mems] ~@body)))
+
+(defn sprite [file]
+  (javax.imageio.ImageIO/read (io/input-stream file)))
