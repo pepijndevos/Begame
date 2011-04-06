@@ -18,7 +18,7 @@
   [w h]
   (let [can (Canvas.)]
     (doto (new JFrame)
-      (.setDefaultCloseOperation WindowConstants/EXIT_ON_CLOSE)
+      (.setDefaultCloseOperation WindowConstants/DISPOSE_ON_CLOSE)
       ;(.setUndecorated true)
       (.setIgnoreRepaint true)
       (.add can)
@@ -29,12 +29,12 @@
       (.createBufferStrategy 2))))
 
 (defn draw-frame
-  "Iterate over the object in this frame
+  "Iterate over the objects in this frame
   and call paint on the visible ones"
   [frame g can]
-  (doseq [obj (->> (vals frame)
-                   (filter #(extends? visible (class %)))
-                   (sort-by priority))]
+  (doseq [obj (->> frame
+                   (filter #(val-extends? visible %))
+                   (sort-by layer))]
     (paint obj g can)))
 
 (defn draw-loop
@@ -54,12 +54,13 @@
   "Compute the next frame
   by calling act on all actors"
   [frame]
-  (into {}
-    (for [[id obj] frame
-          :when (not (nil? obj))]
-      (if (extends? actor (class obj))
-        [id (act obj id frame)]
-        [id obj]))))
+  (reset! fr-mem {})
+  (reduce
+    #(act %2 (key %2) %1)
+    frame
+    (filter
+      (partial val-extends? actor)
+      frame)))
 
 (defn logic-loop
   "An inifnit lazy seq of frame iterations"

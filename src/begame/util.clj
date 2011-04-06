@@ -16,14 +16,15 @@
 
 (defrecord duck [x y width height ^java.awt.Image sprite]
   actor
-  (act [this _ _]
+  (act [this key world]
     (update-in
-      (update-in this
-                 [:y] (partial + (- (rand-int 10) 5)))
-      [:x] (partial + (- (rand-int 10) 5))))
+      (update-in world
+                 [key :y] (partial + (- (rand-int 11) 5)))
+      [key :x] (partial + (- (rand-int 11) 5))))
   visible
   (paint [this g can]
     (.drawImage ^java.awt.Graphics g sprite x y width height can))
+  (layer [_] 5)
   solid
   (rectangle [_]
     (java.awt.Rectangle. x y width height)))
@@ -55,3 +56,26 @@
   (map
     (juxt identity m1 m2)
     (s/intersection (set (keys m1)) (set (keys m2)))))
+
+(defn val-extends?
+  "Check if the MapEnty's val extends prot"
+  [prot [_ obj]]
+  (extends? prot (class obj)))
+
+(defn uuid
+  "Generate an unique identifier"
+  []
+  (keyword (gensym)))
+
+(def fr-mem (atom {}))
+
+(defn frame-memoize
+  "A memoizer that empties after the current frame."
+  [f]
+  (let [id (uuid)]
+    (fn [& args]
+      (if-let [e (find (get @fr-mem id) args)]
+        (val e)
+        (let [ret (apply f args)]
+          (swap! fr-mem assoc-in [id args] ret)
+          ret)))))

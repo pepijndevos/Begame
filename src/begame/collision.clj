@@ -1,5 +1,5 @@
 (ns begame.collision
-  (:use begame.object)
+  (:use [begame util object])
   (:import java.awt.Rectangle)
   (:require [clojure.set :as s])
   (:refer-clojure :exclude [contains?]))
@@ -19,16 +19,16 @@
   Every set contains two keys of objects
   that have intersecting Rectangles."
   [frame]
-  (for [rights (->> (filter (comp (partial instance? begame.object.solid) val) frame)
-                    (map (juxt key (comp rectangle val)))
+  (for [rights (->> (filter (partial val-extends? solid) frame)
+                    (map (juxt val rectangle))
                     (sort-by #(.getX ^java.awt.Rectangle (peek %)))
                     (iterate next)
                     (take-while (complement nil?)))
-        :let [[[k ^java.awt.Rectangle rect] & r] rights]
-        [ckey ^java.awt.Rectangle crect] (take-while
+        :let [[[obj ^java.awt.Rectangle rect] & r] rights]
+        [cval ^java.awt.Rectangle crect] (take-while
                                            #(> (+ (.getX rect) (.getWidth rect))
                                                (.getX ^java.awt.Rectangle (peek %)))
                                            r)
         :when (.intersects rect crect)]
-    #{k ckey}))
+    #{obj cval}))
 

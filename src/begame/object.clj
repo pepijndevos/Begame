@@ -4,7 +4,8 @@
   "A protocol for objects that do stuff"
   (act [this id world]
     "Gets called in the logic loop.
-    Return the new state for this object"))
+    Return the new state for the world.
+    Do not update other actors."))
 
 (defprotocol visible
   "A protocol for objects that need to display themselves"
@@ -23,9 +24,7 @@
     the bouding box of this object"))
 
 (defn wrap-entry [f this & args]
-  (clojure.lang.MapEntry.
-    (key this)
-    (apply f (val this) args)))
+  (apply f (val this) args))
 
 (extend clojure.lang.MapEntry
   actor
