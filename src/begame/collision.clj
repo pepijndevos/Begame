@@ -16,7 +16,7 @@
 
 (defn collisions
   "Returns a seq of sets.
-  Every set contains two keys of objects
+  Every set contains two objects
   that have intersecting Rectangles."
   [frame]
   (for [rights (->> (filter (partial val-extends? solid) frame)
