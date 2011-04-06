@@ -75,7 +75,7 @@
   (let [can (canvas w h)]
     (watch can)
     (->> (logic-loop)
-      ;(seque 10)
+      (seque 3)
       ;(trickle)
       (animate)
       (draw-loop can))))
