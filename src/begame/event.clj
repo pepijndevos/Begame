@@ -8,6 +8,18 @@
   "Contains the state of the mouse"
   (ref {:x nil, :y nil, :buttons #{}}))
 
+(def codes (into {}
+             (for [field
+                   (filter
+                     #(.startsWith (.getName %) "VK_")
+                     (.getFields java.awt.event.KeyEvent))]
+               [(-> (.getName field)
+                  (.substring 3)
+                  (.toLowerCase)
+                  (.replace \_ \-)
+                  (keyword))
+                (.getInt field nil)])))
+
 (deftype
   watcher []
   java.awt.event.KeyListener
