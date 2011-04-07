@@ -11,8 +11,8 @@
   actor
   (act [_ id world]
     (cond
-      (clojure.core/contains? @pressed 38) (update-in world [id :y] - 15)
-      (clojure.core/contains? @pressed 40) (update-in world [id :y] + 15)
+      (clojure.core/contains? @pressed (:up codes)) (update-in world [id :y] - 15)
+      (clojure.core/contains? @pressed (:down codes)) (update-in world [id :y] + 15)
       :else world))
   visible
   (paint [ball g can] (.drawImage ^java.awt.Graphics g (:bat images) 760 y can))
@@ -33,7 +33,6 @@
 
 (defn move [obj]
   (let [{:keys [x y xdelt ydelt]} obj]
-    (println obj)
     (assoc obj
            :x (+ x xdelt)
            :y (+ y ydelt))))

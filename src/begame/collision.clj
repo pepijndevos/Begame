@@ -14,21 +14,23 @@
     (+ (.getY rect)
        (/ (.getHeight rect) 2))))
 
-(defn collisions
+(def collisions 
   "Returns a seq of sets.
   Every set contains two objects
   that have intersecting Rectangles."
-  [frame]
-  (for [rights (->> (filter (partial val-extends? solid) frame)
-                    (map (juxt val rectangle))
-                    (sort-by #(.getX ^java.awt.Rectangle (peek %)))
-                    (iterate next)
-                    (take-while (complement nil?)))
-        :let [[[obj ^java.awt.Rectangle rect] & r] rights]
-        [cval ^java.awt.Rectangle crect] (take-while
-                                           #(> (+ (.getX rect) (.getWidth rect))
-                                               (.getX ^java.awt.Rectangle (peek %)))
-                                           r)
-        :when (.intersects rect crect)]
-    #{obj cval}))
+  (frame-memoize
+    (fn collisions
+      [frame]
+      (for [rights (->> (filter (partial val-extends? solid) frame)
+                        (map (juxt val rectangle))
+                        (sort-by #(.getX ^java.awt.Rectangle (peek %)))
+                        (iterate next)
+                        (take-while (complement nil?)))
+            :let [[[obj ^java.awt.Rectangle rect] & r] rights]
+            [cval ^java.awt.Rectangle crect] (take-while
+                                               #(> (+ (.getX rect) (.getWidth rect))
+                                                   (.getX ^java.awt.Rectangle (peek %)))
+                                               r)
+            :when (.intersects rect crect)]
+        #{obj cval}))))
 
