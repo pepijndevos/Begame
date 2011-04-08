@@ -65,11 +65,9 @@
                     (.fillRect ^java.awt.Graphics g 0 0 800 500))
              (layer [_] 0)))
 
-(dosync
-  (alter state assoc
-         :field field
-         :ball (ball. 380 230 20 20)
-         :bat (bat. 160)
-         :bot (bot. 160)))
-
-(game 800 500)
+(game 800 500
+      {:field field
+       :ball (ball. 380 230 20 20)
+       :bat (bat. 160)
+       :bot (bot. 160)}
+      :transition 100)

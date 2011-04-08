@@ -8,10 +8,6 @@
            [java.awt Canvas Graphics2D Color])
   (:require [clojure.set :as s]))
 
-(def state
-  "The game state."
-  (ref {}))
-
 (defn canvas
   "Get a fresh JFrame with a Canvas in it.
   Has repaint disabled and a bufferStrategy set"
@@ -55,28 +51,28 @@
   by calling act on all actors"
   [frame]
   (reset! fr-mem {})
-  (reduce
-    #(act %2 (key %2) %1)
-    frame
-    (filter
-      (partial val-extends? actor)
-      frame)))
+  (dosync
+    (reduce
+      #(act %2 (key %2) %1)
+      frame
+      (filter
+        (partial val-extends? actor)
+        frame))))
 
 (defn logic-loop
   "An inifnit lazy seq of frame iterations"
-  []
-  (cons (dosync (alter state iteration))
-        (lazy-seq (logic-loop))))
+  [init]
+  (iterate iteration init))
 
 (defn game
   "Create a new game loop and window
   of the specified size"
-  [w h]
+  [w h init & {:keys [transition fix queue]}]
   (let [can (canvas w h)]
     (watch can)
-    (->> (logic-loop)
-      ;(seque 2)
-      ;(trickle)
-      (animate)
+    (->> (logic-loop init)
+      ((if queue (partial seque queue) identity))
+      ((if fix (partial trickle fix) identity))
+      ((if transition (partial animate transition) identity))
       (draw-loop can))))
 

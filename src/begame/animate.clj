@@ -1,10 +1,6 @@
 (ns begame.animate
   (:use [begame util object]))
 
-(def ^:dynamic *frame-duration*
-  "The interval between logic frames"
-  100)
-
 (defn now
   "The current time in miliseconds"
   []
@@ -29,30 +25,30 @@
       (int))))
 
 (defn trickle
-  "Release one frame every *frame-duration*"
-  [slow]
-  (map #(do (Thread/sleep *frame-duration*) %) slow))
+  "Release one frame every duration"
+  [duration slow]
+  (map #(do (Thread/sleep duration) %) slow))
 
 (defn animate*
   "Generate a transition frame between from and to
-  from start during *frame-duration*"
-  [[from to] start]
+  from start during duration"
+  [duration [from to] start]
   (into {}
     (for [[id o n] (align from to)]
       (if (extends? actor (class n))
         [id (merge-with
               #(if (and (number? %1) (not= %1 %2))
-                 (transition start *frame-duration* %1 %2)
+                 (transition start duration %1 %2)
                  %2)
               o n)]
         [id n]))))
 
 (defn animate
   "Generate transition frames between
-  logic frames laying *frame-duration* appart"
-  [frames]
+  logic frames laying duration appart"
+  [duration frames]
   (let [start (now)]
     (lazy-cat
-      (take-while (fn [_] (< (now) (+ start *frame-duration*)))
-                  (repeatedly #(animate* frames start)))
-      (animate (rest frames)))))
+      (take-while (fn [_] (< (now) (+ start duration)))
+                  (repeatedly #(animate* duration frames start)))
+      (animate duration (rest frames)))))
