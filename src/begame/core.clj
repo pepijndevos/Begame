@@ -44,7 +44,7 @@
             (draw-frame (first frame) g can)
             (.dispose g)))
         (.show strategy))
-      (recur (rest frame)))))
+      (recur (next frame)))))
 
 (defn iteration
   "Compute the next frame

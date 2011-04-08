@@ -79,3 +79,19 @@
         (let [ret (apply f args)]
           (swap! fr-mem assoc-in [id args] ret)
           ret)))))
+
+(defn idseq [s]
+  (into {} (map #(vector (uuid) %) s)))
+
+(defn update-id
+  "Update id in m to be the result of
+  associating the key to the val,
+  or the result of caling value with
+  the current value"
+  [m id & key-vals]
+  (assoc m id
+    (reduce conj (get m id)
+      (for [[k v] (partition 2 key-vals)]
+        [k (if (fn? v)
+             (v (get-in m [id k]))
+             v)]))))
