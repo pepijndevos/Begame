@@ -53,11 +53,12 @@
   (reset! fr-mem {})
   (dosync
     (reduce
-      #(act %2 (key %2) %1)
-      frame
-      (filter
-        (partial val-extends? actor)
-        frame))))
+      (partial octopus frame)
+      (map
+        #(act % (key %) frame)
+        (filter
+          (partial val-extends? actor)
+          frame)))))
 
 (defn logic-loop
   "An inifnit lazy seq of frame iterations"

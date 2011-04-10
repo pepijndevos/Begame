@@ -95,3 +95,13 @@
         [k (if (fn? v)
              (v (get-in m [id k]))
              v)]))))
+
+(defn octopus
+  "Merge 3 maps intelligently"
+  [org mrg1 mrg2]
+  (apply
+    dissoc
+    (into
+      mrg1
+      (s/difference (set mrg2) (set org)))
+    (s/difference (set (keys org)) (set (keys mrg2)))))
