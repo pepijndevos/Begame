@@ -6,28 +6,28 @@
 
 (def mouse
   "Contains the state of the mouse"
-  (ref {:x nil, :y nil, :buttons #{}}))
+  (ref {:loc nil, :buttons #{}}))
 
 (def codes (into {}
              (for [field
                    (filter
                      #(.startsWith (.getName %) "VK_")
                      (.getFields java.awt.event.KeyEvent))]
-               [(-> (.getName field)
+               [(.getInt field nil)
+                (-> (.getName field)
                   (.substring 3)
                   (.toLowerCase)
                   (.replace \_ \-)
-                  (keyword))
-                (.getInt field nil)])))
+                  (keyword))])))
 
 (deftype
   watcher []
   java.awt.event.KeyListener
   (keyTyped [_ _])
   (keyPressed [_ evt]
-    (dosync (alter pressed conj (.getKeyCode evt))))
+    (dosync (alter pressed conj (codes (.getKeyCode evt)))))
   (keyReleased [_ evt]
-    (dosync (alter pressed disj (.getKeyCode evt))))
+    (dosync (alter pressed disj (codes (.getKeyCode evt)))))
   java.awt.event.MouseListener
   (mouseClicked [_ _])
   (mouseEntered [_ _])
@@ -35,14 +35,12 @@
   (mousePressed [_ evt]
     (dosync
       (alter mouse assoc
-             :x (.getX evt)
-             :y (.getY evt)
+             :loc (.getPoint evt)
              :buttons (conj (get @mouse :buttons) (.getButton evt)))))
   (mouseReleased [_ evt]
     (dosync
       (alter mouse assoc
-             :x (.getX evt)
-             :y (.getY evt)
+             :loc (.getPoint evt)
              :buttons (disj (get @mouse :buttons) (.getButton evt))))))
 
 (defn watch

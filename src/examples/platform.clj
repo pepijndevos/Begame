@@ -30,8 +30,8 @@
   actor
   (act [ch id world]
     (let [velx (cond
-                 (contains? @pressed (:left codes))  (- velx 2)
-                 (contains? @pressed (:right codes)) (+ velx 2)
+                 (contains? @pressed :left)  (- velx 2)
+                 (contains? @pressed :right) (+ velx 2)
                  :else velx)
           nch (character.
                 (+ x velx)
@@ -45,7 +45,7 @@
                       :y (if (< (+ y 30) (:y col))
                            (- (:y col) 30)
                            y)
-                      :vely (if (contains? @pressed (:up codes))
+                      :vely (if (contains? @pressed :up)
                               -20
                               0)))
         nworld)))
