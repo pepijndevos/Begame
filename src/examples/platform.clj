@@ -4,8 +4,8 @@
 (defn random-color []
   (java.awt.Color. (rand-int 0xffffff)))
 
-(def width 800)
-(def height 800)
+(def width 2000)
+(def height 2000)
 (def ch-spr {:standing (sprite "src/examples/char.gif")
              :walking (sprite "src/examples/char_walk.gif")})
 
@@ -25,6 +25,18 @@
                     (.setColor ^java.awt.Graphics g java.awt.Color/BLACK)
                     (.fillRect ^java.awt.Graphics g 0 0 width height))
              (layer [_] 0)))
+
+(defrecord controler [x y]
+  actor
+  (act [_ id world]
+    (assoc world id
+           (controler.
+             (- (- (:x (:ch world)) 250))
+             (- (- (:y (:ch world)) 250)))))
+  visible
+  (paint [_ g _]
+    (.translate g x y))
+  (layer [_] -1))
 
 (defrecord character [x y velx vely]
   actor
@@ -65,13 +77,14 @@
   (assoc
     (idseq
       (repeatedly
-        100
+        500
         #(block. (rand-int width)
                  (rand-int height)
                  (rand-int 100)
                  16
                  (random-color))))
-    :ch (character. 400 0 0 0)
+    :ch (character. 250 0 0 0)
+    :ctrl (controler. 0 0)
     :bg field))
 
-(game width height field :transition 100)
+(game 500 500 field :transition 100)
