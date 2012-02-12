@@ -6,11 +6,16 @@
   []
   (System/currentTimeMillis))
 
-(defn transition
+(defmulti transition
   "Time-based transition.
   Return the current value
   between from and to over ms
   staring at start"
+  #(type %4))
+
+(defmethod transition :default [start ms from to] to)
+
+(defmethod transition java.lang.Number
   [start ms from to]
   (let [ms (max 1 ms)
         step (/ (- to from) ms)
@@ -21,8 +26,32 @@
       (* step)
       (+ from)
       (min ma)
-      (max mi)
-      (int))))
+      (max mi))))
+
+(defmethod transition java.awt.geom.AffineTransform
+  [start ms from to]
+  (let [fmatrix (double-array 6)
+        tmatrix (double-array 6)]
+    (.getMatrix from fmatrix)
+    (.getMatrix to tmatrix)
+    (java.awt.geom.AffineTransform.
+      (amap fmatrix idx ret
+        (transition start ms (aget fmatrix idx) (aget tmatrix idx))))))
+
+(defmethod transition java.awt.Rectangle
+  [start ms from to]
+  (java.awt.Rectangle.
+    (transition start ms (.getX from) (.getX to))
+    (transition start ms (.getY from) (.getY to))
+    (transition start ms (.getWidth from) (.getWidth to))
+    (transition start ms (.getHeight from) (.getHeight to))))
+
+(defmethod transition clojure.lang.IPersistentMap
+  [start ms from to]
+  (into {}
+    (zipmap (keys to)
+            (map #(transition start ms %1 %2)
+                 (vals from) (vals to)))))
 
 (defn trickle
   "Release one frame every duration"
@@ -31,17 +60,9 @@
 
 (defn animate*
   "Generate a transition frame between from and to
-  from start during duration"
-  [duration [from to] start]
-  (into {}
-    (for [[id o n] (align from to)]
-      (if (extends? actor (class n))
-        [id (merge-with
-              #(if (and (number? %1) (not= %1 %2))
-                 (transition start duration %1 %2)
-                 %2)
-              o n)]
-        [id n]))))
+  from start during ms"
+  [start ms [from to]]
+  (transition start ms from to))    
 
 (defn animate
   "Generate transition frames between
@@ -50,5 +71,5 @@
   (let [start (now)]
     (lazy-cat
       (take-while (fn [_] (< (now) (+ start duration)))
-                  (repeatedly #(animate* duration frames start)))
+                  (repeatedly #(animate* start duration frames)))
       (animate duration (rest frames)))))

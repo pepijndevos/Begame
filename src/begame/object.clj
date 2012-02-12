@@ -1,36 +1,25 @@
-(ns begame.object)
+(ns begame.object
+  (:require [clojure.java.io :as io]))
 
-(defprotocol actor
-  "A protocol for objects that do stuff"
-  (act [this id world]
-    "Gets called in the logic loop.
-    Return the new state for the world.
-    Do not update other actors."))
+(defrecord thing [sprite rect trans])
 
-(defprotocol visible
-  "A protocol for objects that need to display themselves"
-  (paint [this graphic canvas]
-    "Gets called in the paint loop.
-    Paint object to grapics,
-    using canvas as a possible ImageObserver")
-  (layer [this]
-    "The layer of this object.
-    Objects with a lower layer get drawn first"))
+(defn sprite
+  "Read a BufferedImage from a file"
+  [file]
+  (javax.imageio.ImageIO/read (io/input-stream file)))
 
-(defprotocol solid
-  "Objects that collide with the world"
-  (rectangle [this]
-    "Return a Rectangle representing
-    the bouding box of this object"))
+(defn rect [x y w h]
+  (java.awt.Rectangle. x y w h))
 
-(defn wrap-entry [f this & args]
-  (apply f (val this) args))
+(defn transform [x y & {:keys [scale scalex scaley rot], :or {scaley 1, scalex 1, scale 1, rot 0}}]
+  (doto (java.awt.geom.AffineTransform.)
+    (.translate x y)
+    (.rotate rot)
+    (.scale scale scale)
+    (.scale scalex scaley)))
 
-(extend clojure.lang.MapEntry
-  actor
-  {:act (partial wrap-entry act)}
-  visible
-  {:paint (partial wrap-entry paint)
-   :layer (partial wrap-entry layer)}
-  solid
-  {:rectangle (partial wrap-entry rectangle)})
+(defn make-thing [path x y & trans]
+  (let [s (sprite path)
+        r (rect x y (.getWidth s) (.getHeight s))
+        t (apply transform x y trans)]
+  (->thing s r t)))

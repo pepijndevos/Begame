@@ -28,16 +28,18 @@
   "Iterate over the objects in this frame
   and call paint on the visible ones"
   [frame g can]
-  (doseq [obj (->> frame
-                   (filter #(val-extends? visible %))
-                   (sort-by layer))]
-    (paint obj g can)))
+  (doseq [[_ obj] frame]
+    (.drawImage
+      ^java.awt.Graphics g
+      (:sprite obj)
+      (:trans obj)
+      can)))
 
 (defn draw-loop
-  "Draws frames from logic and paints them to can"
-  [^Canvas can logic]
+  "Draws frames and paints them to can"
+  [^Canvas can frames]
   (let [strategy (.getBufferStrategy can)]
-    (loop [frame logic]
+    (loop [frame frames]
       (do-while (.contentsLost strategy)
         (do-while (.contentsRestored strategy)
           (let [g (.getDrawGraphics strategy)]
@@ -46,32 +48,13 @@
         (.show strategy))
       (recur (next frame)))))
 
-(defn iteration
-  "Compute the next frame
-  by calling act on all actors"
-  [frame]
-  (reset! fr-mem {})
-  (dosync
-    (reduce
-      (partial octopus frame)
-      (map
-        #(act % (key %) frame)
-        (filter
-          (partial val-extends? actor)
-          frame)))))
-
-(defn logic-loop
-  "An inifnit lazy seq of frame iterations"
-  [init]
-  (iterate iteration init))
-
 (defn game
   "Create a new game loop and window
   of the specified size"
-  [w h init & {:keys [transition fix queue]}]
+  [w h frames & {:keys [transition fix queue]}]
   (let [can (canvas w h)]
     (watch can)
-    (->> (logic-loop init)
+    (->> frames
       ((if queue (partial seque queue) identity))
       ((if fix (partial trickle fix) identity))
       ((if transition (partial animate transition) identity))
