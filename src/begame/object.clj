@@ -6,7 +6,7 @@
 (defn sprite
   "Read a BufferedImage from a file"
   [file]
-  (javax.imageio.ImageIO/read (io/input-stream file)))
+  (javax.imageio.ImageIO/read (io/input-stream (io/resource file))))
 
 (defn rect [{:keys [sprite trans]}]
   (.getBounds
@@ -15,6 +15,9 @@
       (java.awt.Rectangle.
         0 0
         (.getWidth sprite) (.getHeight sprite)))))
+
+(defn rotation [trans]
+  (java.lang.Math/asin (.getShearY trans)))
 
 (defn make-thing
   ([path x y] (make-thing path x y 0))
