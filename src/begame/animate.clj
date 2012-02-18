@@ -38,14 +38,6 @@
       (amap fmatrix idx ret
         (transition start ms (aget fmatrix idx) (aget tmatrix idx))))))
 
-(defmethod transition java.awt.Rectangle
-  [start ms from to]
-  (java.awt.Rectangle.
-    (transition start ms (.getX from) (.getX to))
-    (transition start ms (.getY from) (.getY to))
-    (transition start ms (.getWidth from) (.getWidth to))
-    (transition start ms (.getHeight from) (.getHeight to))))
-
 (defmethod transition clojure.lang.IPersistentMap
   [start ms from to]
   (into {}

@@ -28,7 +28,7 @@
   "Iterate over the objects in this frame
   and call paint on the visible ones"
   [frame g can]
-  (doseq [[_ obj] frame]
+  (doseq [[_ obj] (sort-by :order frame)]
     (.drawImage
       ^java.awt.Graphics g
       (:sprite obj)
